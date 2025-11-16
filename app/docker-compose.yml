@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: journal_postgres
+    environment:
+      POSTGRES_DB: grade_journal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - journal_network
+
+  journal-app:
+    build: .
+    container_name: journal_app
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: grade_journal
+      ALGORITHM: HS256
+      SECRET_KEY: journal-secret-key-2024
+      ADMIN_LOGIN: admin
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    networks:
+      - journal_network
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
+
+networks:
+  journal_network:
+    driver: bridge
